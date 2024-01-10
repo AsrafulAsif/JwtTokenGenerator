@@ -5,6 +5,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.modelmapper.ModelMapper;
 
+import javax.crypto.SecretKey;
 import java.lang.reflect.Field;
 import java.security.Key;
 import java.util.Date;
@@ -25,7 +26,7 @@ public class JwtTokenGenerator {
                 .id(id)
                 .issuer(issuer)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .signWith(this.getSigningKey());
+                .signWith(this.getSecretKey(),Jwts.SIG.HS256);
 
         if (claimSource!=null){
             Class<?> claimSourceClass = claimSource.getClass();
@@ -52,14 +53,15 @@ public class JwtTokenGenerator {
         return builder.compact();
     }
 
-    private Key getSigningKey(){
-        byte[] keyBytes = Decoders.BASE64.decode(jwtKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+
+
+    private SecretKey getSecretKey(){
+       return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtKey));
     }
 
     public <T> T verifyTokenAndReturnDetails(String token, Class<T> claimTargetClass) {
         Claims body = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(this.getSigningKey().getEncoded()))
+                .verifyWith(Keys.hmacShaKeyFor(this.getSecretKey().getEncoded()))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
