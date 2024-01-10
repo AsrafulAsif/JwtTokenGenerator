@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 public class JwtTokenGenerator {
-    private static final Logger LOGGER = Logger.getLogger("JwtTokenGenerator");
+    private static final Logger LOGGER = Logger.getLogger(JwtTokenGenerator.class.getName());
     private final String jwtKey;
     private final long expirationInMillis;
 
