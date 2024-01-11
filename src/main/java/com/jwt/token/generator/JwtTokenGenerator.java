@@ -43,7 +43,6 @@ public class JwtTokenGenerator {
 
         }
 
-
         if (expirationInMillis >= 0) {
             long expMillis = System.currentTimeMillis() + expirationInMillis;
             Date exp = new Date(expMillis);
@@ -60,13 +59,19 @@ public class JwtTokenGenerator {
     }
 
     public <T> T verifyTokenAndReturnDetails(String token, Class<T> claimTargetClass) {
-        Claims body = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(this.getSecretKey().getEncoded()))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            Claims body = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(this.getSecretKey().getEncoded()))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-        return convertClass(body, claimTargetClass);
+            return convertClass(body, claimTargetClass);
+        } catch (ClaimJwtException e) {
+            throw new RuntimeException(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Bad token");
+        }
     }
     private  <T> T convertClass(Object source, Class<T> targetClass){
         ModelMapper modelMapper = new ModelMapper();
